@@ -32,3 +32,10 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# Ignore application config.
+/.env.development
+/.env.*local
+
+# Ignore locally-installed gems.
+/vendor/bundle/
