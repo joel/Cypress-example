@@ -86,8 +86,8 @@ module PostCreation
 
         # Sanitize the app name
         sanitized_name = current_app_name.downcase
-                          .gsub("_", "") # Remove underscores
-                          .gsub("-", "") # Remove dashes
+                                         .delete("_") # Remove underscores
+                                         .delete("-") # Remove dashes
 
         # Verify the sanitized name
         if sanitized_name.match?(/^[a-z][a-z0-9]*$/)

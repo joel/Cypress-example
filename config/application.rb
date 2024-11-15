@@ -45,6 +45,5 @@ module RailsAppTest3
     config.log_level = :debug
 
     config.active_record.schema_format = :ruby # :sql
-
   end
 end

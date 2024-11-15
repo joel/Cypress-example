@@ -40,7 +40,7 @@ module PostCreation
         run_with_clean_bundler_env("SKIP=RailsSchemaUpToDate git apply patches/post_form.erb.patch")
         commit "Update post form partial"
 
-        if adapter_name !~ /PostgreSQL/
+        unless adapter_name.include?("PostgreSQL")
           run_with_clean_bundler_env("SKIP=RailsSchemaUpToDate git apply patches/post_model.rb.patch")
           commit "Update post model"
         end
@@ -51,7 +51,7 @@ module PostCreation
         RUBY
         commit "Seed content"
 
-        if adapter_name =~ /Mysql2/
+        if adapter_name.include?("Mysql2")
           current_directory_name = File.basename(Dir.pwd)
           say "Creating MySQL databases for #{current_directory_name}_development and #{current_directory_name}_test"
           run("docker exec mysql-container bash -c \"mysql -u root -e 'CREATE DATABASE IF NOT EXISTS #{current_directory_name}_development;'\"")
@@ -69,11 +69,11 @@ module PostCreation
         run_with_clean_bundler_env("SKIP=RailsSchemaUpToDate git apply patches/fix_test_suite.patch")
         commit "Fix Test Suite"
 
-        insert_into_file "app/models/post.rb", "  validates :title, presence: true\n", :after => "belongs_to :user\n"
+        insert_into_file "app/models/post.rb", "  validates :title, presence: true\n", after: "belongs_to :user\n"
         commit "Add validation to post model"
 
-        if adapter_name !~ /PostgreSQL/
-          insert_into_file "app/models/post.rb", "  attribute :user_id, :uuid_v7\n", :after => "belongs_to :user\n"
+        unless adapter_name.include?("PostgreSQL")
+          insert_into_file "app/models/post.rb", "  attribute :user_id, :uuid_v7\n", after: "belongs_to :user\n"
           commit "Declare Foreign Key Type"
         end
 
@@ -81,7 +81,7 @@ module PostCreation
         run("cp -v patches/posts_spec.rb spec/system/posts_spec.rb")
         commit "Add posts system spec"
 
-        if adapter_name =~ /PostgreSQL/
+        if adapter_name.include?("PostgreSQL")
           say("DB_PORT=5433 bin/dev")
         else
           say("bin/dev")
