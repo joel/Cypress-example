@@ -1,55 +1,47 @@
 name: CI
 
-on:
-  pull_request:
-  push:
-    branches: [ main ]
+on: [ push ]
 
 jobs:
-  scan_ruby:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
-
-  scan_js:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/importmap audit
 
   lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Set up Ruby
+    runs-on: ubuntu-latest
+
+    steps:
+      -
+        name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+      -
+        name: Install ruby 3.3.6
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
-
+          ruby-version: 3.3.6
+      -
+        name: "Lint / rubocop"
+        run: |
+          gem install rubocop
+          gem install rubocop-performance
+          gem install rubocop-rake
+          gem install rubocop-rspec
+          gem install rubocop-rspec_rails
+          gem install rubocop-gitlab-security
+          gem install rubocop-rails
+          gem install rubocop-capybara
+          gem install rubocop-factory_bot
+          rubocop --parallel
+      -
+        name: "Lint / erb_lint"
+        run: bin/erb_lint --lint-all
+      -
+        name: "Security / brakeman"
+        run: |
+          gem install brakeman
+          brakeman --exit-on-warn --no-progress --color --output /dev/stdout
+      -
+        name: "Security / bundle-audit"
+        run: |
+          gem install bundle-audit
+          bundle-audit check --update -v
